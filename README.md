@@ -13,9 +13,29 @@ This repository contains a broadly compatible set of baseline rules, encoding se
 
 ## What's Inside This Repository?
 
-- `generate_rules.py`: The Python script responsible for generating these rules files, leveraging the `gemini-2.5-flash-preview-05-20` model
+- `generate_rules.py`: The Python script responsible for generating these rules files, leveraging the `gemini-2.5-flash-preview-05-20` model (requires `GOOGLE_API_KEY` environment variable)
 - `prompt.md`: A transparent look at the core prompt used to guide Gemini in crafting these rules files
 - **Rules Directory**: The heart of the repository, organized intuitively by Programming Language/Framework to provide easy access to the relevant security rules.
+
+## Using the Rule Generator
+
+To use the `generate_rules.py` script to create your own rules files:
+
+1. **Install dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+2. **Set up Google API Key:**
+   ```bash
+   export GOOGLE_API_KEY="your-google-api-key-here"
+   ```
+   You can obtain a Google API key from the [Google AI Studio](https://aistudio.google.com/app/apikey).
+
+3. **Run the generator:**
+   ```bash
+   python generate_rules.py
+   ```
 
 ### Supported Technologies
 

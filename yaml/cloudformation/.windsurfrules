@@ -1,0 +1,43 @@
+---
+trigger: glob
+description: Enforces secure configurations for YAML CloudFormation infrastructure, preventing common cloud security misconfigurations.
+globs: **/*.yaml, **/*.yml
+---
+```
+As a security-aware infrastructure engineer, generate secure YAML configurations using Cloudformation that inherently prevent common cloud security misconfigurations across all major cloud providers (AWS, Azure, GCP, and others). Focus on implementing defense-in-depth principles, least privilege access, and secure-by-default configurations regardless of the target cloud platform. Use inline comments to clearly highlight critical security controls, compliance requirements, and any security assumptions made in the infrastructure code. Adhere strictly to cloud security best practices from frameworks like CIS Benchmarks, cloud provider security frameworks (AWS Well-Architected, Azure Security Benchmark, Google Cloud Security Command Center), and industry compliance standards. **Avoid Hardcoded Values**: Never hardcode sensitive values like passwords or API keys. Use external secret management services appropriate for the target cloud platform.
+
+### Risk: Excessive Permissions
+**Summary:** Granting overly broad permissions can lead to privilege escalation and unauthorized access to resources across cloud environments.
+**Mitigation Rule:** Define IAM roles and policies with the absolute minimum necessary permissions (least privilege). Use specific resource ARNs, conditions, and action types. Avoid wildcard `*` permissions except for tightly controlled read-only access where appropriate. Ensure all policies are regularly reviewed and validated for necessity, regardless of cloud platform (e.g., AWS IAM, Azure RBAC, GCP IAM).
+
+### Risk: Unencrypted Data at Rest
+**Summary:** Storing sensitive data without encryption at rest exposes it to unauthorized access if storage components are compromised or misconfigured.
+**Mitigation Rule:** Enforce server-side encryption for all storage services (e.g., S3 buckets, EBS volumes, RDS databases, Azure Storage, GCP Storage Buckets, Cloud SQL, Persistent Disks) using customer-managed keys (CMK) from a Key Management Service (KMS) where possible, or provider-managed keys (PMK) as a minimum. Configure services to reject unencrypted uploads.
+
+### Risk: Publicly Accessible Resources
+**Summary:** Exposing sensitive or critical infrastructure resources directly to the public internet can lead to data breaches, denial of service, and unauthorized command execution.
+**Mitigation Rule:** Configure storage buckets, databases, load balancers, and compute instances (e.g., EC2, Azure VMs, GCP Compute Engine instances) to be private by default. Implement appropriate network access controls (e.g., security groups, NACLs, private subnets, Private Link/Service Endpoints) to restrict inbound access to only necessary sources (internal networks, specific IPs) for any internet-facing services. Block public access at the account or bucket level where supported.
+
+### Risk: Insecure Network Ingress/Egress Rules
+**Summary:** Overly permissive network security group, firewall, or network ACL rules can allow unauthorized traffic into or out of a virtual network, leading to lateral movement or data exfiltration.
+**Mitigation Rule:** Define network security group, network ACL, and firewall rules with the principle of least privilege, allowing only essential ingress and egress traffic on required ports and from/to specific IP ranges or other security groups. Avoid 0.0.0.0/0 for inbound rules unless absolutely necessary for public-facing services, and strictly limit outbound traffic to only required destinations.
+
+### Risk: Hardcoded Secrets and Credentials
+**Summary:** Embedding sensitive credentials, API keys, or passwords directly in infrastructure code creates significant security vulnerabilities and makes rotation difficult.
+**Mitigation Rule:** Never hardcode sensitive values directly in YAML configurations. Utilize cloud-native secret management services (e.g., AWS Secrets Manager, Azure Key Vault, Google Secret Manager) to store and retrieve all secrets securely. Reference these services within CloudFormation templates instead of plain-text values.
+
+### Risk: Insufficient Logging and Monitoring
+**Summary:** Lack of comprehensive logging and monitoring hinders the detection of security incidents, unauthorized activities, and compliance violations across the cloud environment.
+**Mitigation Rule:** Enable detailed logging for all critical services (e.g., CloudTrail, VPC Flow Logs, S3 access logs, RDS logs, Azure Activity Logs, Azure Monitor, GCP Audit Logs, Cloud Logging). Configure logs to be encrypted, immutable, and delivered to centralized logging solutions for long-term retention and analysis. Enable monitoring and alerting for suspicious activities and configuration changes.
+
+### Risk: Misconfigured Compute Instance Defaults
+**Summary:** Deploying compute instances with insecure default settings (e.g., default admin passwords, open RDP/SSH ports, unhardened OS images) creates easy entry points for attackers.
+**Mitigation Rule:** Always specify the latest secure and hardened operating system images (e.g., CIS hardened AMIs/VM images). Configure compute instances with instance profiles/managed identities for permissions instead of access keys. Disable default administrative access (e.g., password-based SSH/RDP) and enforce key-pair or bastion host access. Remove unnecessary software and services.
+
+### Risk: Insecure Load Balancer/API Gateway Configuration
+**Summary:** Misconfigured load balancers or API gateways can expose backend services, allow unencrypted traffic, or provide inadequate protection against common web attacks.
+**Mitigation Rule:** Enforce HTTPS/SSL/TLS for all external-facing load balancers and API gateways. Utilize the latest secure TLS versions and strong cipher suites. Integrate with Web Application Firewalls (WAF) to protect against common web exploits. Configure proper health checks and timeout settings to ensure backend stability and availability.
+
+### Risk: Lack of Resource Deletion Protection
+**Summary:** Accidental or malicious deletion of critical infrastructure resources can lead to significant service disruption and data loss.
+**Mitigation Rule:** Enable deletion protection for critical resources that support it (e.g., CloudFormation stacks, S3 buckets, RDS instances, Azure Storage Accounts, GCP Cloud SQL instances). Implement CloudFormation Stack Policy to prevent unintended updates or deletions of critical resources or properties.

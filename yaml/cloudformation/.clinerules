@@ -1,0 +1,45 @@
+# Secure Infrastructure-as-Code Generation Rules for YAML Cloudformation
+
+As a security-aware infrastructure engineer, generate secure YAML configurations using Cloudformation that inherently prevent common cloud security misconfigurations across all major cloud providers (AWS, Azure, GCP, and others).
+Focus on implementing defense-in-depth principles, least privilege access, and secure-by-default configurations regardless of the target cloud platform.
+Use inline comments to clearly highlight critical security controls, compliance requirements, and any security assumptions made in the infrastructure code.
+Adhere strictly to cloud security best practices from frameworks like CIS Benchmarks, cloud provider security frameworks (AWS Well-Architected, Azure Security Benchmark, Google Cloud Security Command Center), and industry compliance standards.
+**Avoid Hardcoded Values**: Never hardcode sensitive values like passwords or API keys. Use external secret management services appropriate for the target cloud platform.
+
+## Top Infrastructure Security Risks and Mitigation Rules
+
+### Risk: Excessive Permissions
+**Summary:** Granting overly broad or unnecessary permissions to identities and services significantly increases the blast radius of a breach across all cloud platforms.
+**Mitigation Rule:** Always apply the principle of least privilege, ensuring IAM roles, users, and service principals in Cloudformation templates grant only the absolute minimum required permissions for resources to function securely. Prioritize fine-grained permissions over wildcards, and explicitly deny actions where possible.
+
+### Risk: Publicly Accessible Storage
+**Summary:** Unrestricted public access to cloud storage buckets (e.g., S3, Azure Blob, GCP Cloud Storage) can lead to data breaches and unauthorized data exposure.
+**Mitigation Rule:** Configure all storage resources in Cloudformation to block public access by default, enforce bucket policies that restrict access to authenticated users or specific VPC endpoints, and never allow public read/write permissions unless explicitly justified and secured via other controls.
+
+### Risk: Unencrypted Data at Rest
+**Summary:** Storing sensitive data without encryption at rest in databases, storage volumes, and other services leaves it vulnerable to unauthorized access if the underlying storage is compromised.
+**Mitigation Rule:** Mandate encryption at rest for all data storage, databases, and message queues provisioned via Cloudformation, utilizing service-managed encryption keys (SSE-S3, CMK, etc.) or customer-managed keys (KMS, Key Vault, Cloud KMS) where compliance requirements dictate.
+
+### Risk: Network Exposure
+**Summary:** Overly permissive security groups, network ACLs, and firewall rules can expose internal resources and services to the public internet or untrusted networks, creating attack vectors.
+**Mitigation Rule:** Design network security configurations in Cloudformation to enforce strict ingress and egress rules, limiting traffic to only necessary ports and trusted IP ranges or security groups, implementing network segmentation, and avoiding 0.0.0.0/0 ingress for non-public-facing services.
+
+### Risk: Missing Logging & Monitoring
+**Summary:** The absence of comprehensive logging and monitoring can prevent timely detection of security incidents, unauthorized activities, and compliance violations across cloud environments.
+**Mitigation Rule:** Ensure Cloudformation templates provision and configure essential logging and monitoring services (e.g., CloudTrail, CloudWatch Logs, Azure Monitor, GCP Cloud Logging) for all critical resources, enable flow logs for VPCs, and integrate with centralized security information and event management (SIEM) systems where applicable.
+
+### Risk: Insecure Data in Transit
+**Summary:** Transmitting sensitive data over unencrypted channels (e.g., HTTP instead of HTTPS) makes it vulnerable to eavesdropping and man-in-the-middle attacks.
+**Mitigation Rule:** Always enforce encryption in transit for all network communication, configuring Load Balancers, API Gateways, and other services in Cloudformation to require TLS/SSL version 1.2 or higher, using strong ciphers, and redirecting HTTP to HTTPS.
+
+### Risk: Hardcoded Secrets
+**Summary:** Embedding sensitive credentials like API keys, passwords, or database connection strings directly within infrastructure-as-code templates exposes them to version control systems and unauthorized access.
+**Mitigation Rule:** Never include any hardcoded secrets in Cloudformation templates. Instead, always integrate with cloud-native secret management services (e.g., AWS Secrets Manager, AWS Parameter Store, Azure Key Vault, GCP Secret Manager) to retrieve credentials securely at runtime.
+
+### Risk: Lack of Deletion Protection
+**Summary:** Accidental or malicious deletion of critical infrastructure components can lead to service outages and data loss.
+**Mitigation Rule:** For critical or stateful resources (e.g., databases, storage buckets, EC2 instances with persistent data), configure DeletionPolicy attributes in Cloudformation to `Retain` or `Snapshot` to prevent unintended data loss or service disruption upon stack deletion.
+
+### Risk: Outdated Compute Images
+**Summary:** Deploying compute instances (VMs, containers) based on outdated or unhardened operating system images introduces known vulnerabilities that can be exploited.
+**Mitigation Rule:** Always specify the latest secure and patched machine images (e.g., AMIs, VM images, container images) in Cloudformation templates. Prefer using hardened images provided by cloud providers or reputable vendors, and integrate with image scanning and patching pipelines.

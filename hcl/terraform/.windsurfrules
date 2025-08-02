@@ -1,0 +1,44 @@
+---
+trigger: glob
+description: Enforces secure best practices for HCL infrastructure configurations using Terraform.
+globs: **/*.tf, **/*.tfvars, **/*.hcl
+---
+- As a security-aware infrastructure engineer, generate secure HCL configurations using Terraform that inherently prevent common cloud security misconfigurations across all major cloud providers (AWS, Azure, GCP, and others).
+- Focus on implementing defense-in-depth principles, least privilege access, and secure-by-default configurations regardless of the target cloud platform.
+- Use inline comments to clearly highlight critical security controls, compliance requirements, and any security assumptions made in the infrastructure code.
+- Adhere strictly to cloud security best practices from frameworks like CIS Benchmarks, cloud provider security frameworks (AWS Well-Architected, Azure Security Benchmark, Google Cloud Security Command Center), and industry compliance standards.
+- **Avoid Hardcoded Values**: Never hardcode sensitive values like passwords or API keys. Use external secret management services appropriate for the target cloud platform.
+
+## Identify and Address Top Infrastructure Security Risks for HCL + Terraform:
+
+### Risk: Excessive Permissions (Least Privilege)
+**Summary:** Granting more permissions than necessary to identities (users, roles, service accounts) increases the attack surface and potential for unauthorized access or data breaches across all cloud providers.
+**Mitigation Rule:** Always apply the principle of least privilege, granting only the minimum necessary permissions for any identity or resource. Restrict IAM policies (AWS), roles (Azure), or service account permissions (GCP) to specific actions on specific resources, avoiding wildcards (`*`) wherever possible in permissions.
+
+### Risk: Unencrypted Data at Rest
+**Summary:** Storing sensitive data without encryption at rest exposes information to unauthorized access if storage resources are compromised, a critical risk across all cloud data stores.
+**Mitigation Rule:** Enforce encryption at rest for all storage services (e.g., AWS S3, Azure Blob Storage, GCP Cloud Storage buckets, databases, disks) using managed encryption keys (CMK/KMS) or platform-managed keys by default.
+
+### Risk: Publicly Accessible Resources
+**Summary:** Exposing resources like storage buckets, databases, or virtual machines directly to the public internet without proper authentication or access controls leads to data leakage or unauthorized access.
+**Mitigation Rule:** Prevent public read/write access to storage buckets. Configure network security groups (Azure), security groups (AWS), or firewall rules (GCP) to block direct public internet access to databases, internal services, and compute instances unless absolutely necessary and with strictly defined, minimal ingress rules.
+
+### Risk: Overly Permissive Network Access
+**Summary:** Configuring network security rules (e.g., security groups, NSGs, firewall rules) with broad inbound or outbound access (`0.0.0.0/0`) allows unrestricted communication, significantly increasing the risk of network-based attacks across all cloud networks.
+**Mitigation Rule:** Restrict network ingress and egress rules to only the necessary IP addresses, CIDR blocks, ports, and protocols. Avoid `0.0.0.0/0` for inbound rules on anything other than public-facing load balancers that are protected by a Web Application Firewall (WAF) or equivalent.
+
+### Risk: Missing or Inadequate Logging and Monitoring
+**Summary:** Insufficient logging of API calls, resource changes, and network activity hinders the ability to detect and respond to security incidents, making forensics and compliance difficult across all cloud environments.
+**Mitigation Rule:** Enable comprehensive logging (e.g., AWS CloudTrail, Azure Activity Log/Monitor, GCP Cloud Audit Logs) for all management plane and data plane activities. Integrate logs with centralized monitoring and alerting systems for security events.
+
+### Risk: Hardcoded Secrets and Sensitive Data
+**Summary:** Embedding sensitive information such as API keys, database credentials, or private keys directly within HCL code or variables poses a severe security risk as it can be exposed if the code repository is compromised.
+**Mitigation Rule:** Never hardcode sensitive values directly in Terraform configurations or variables. Instead, use cloud-native secret management services (e.g., AWS Secrets Manager, Azure Key Vault, GCP Secret Manager) to securely store and retrieve credentials at runtime.
+
+### Risk: Insecure Default Service Configurations
+**Summary:** Many cloud services default to less secure settings for ease of use (e.g., unencrypted traffic, public endpoints), which, if not explicitly overridden in Terraform, can introduce significant vulnerabilities.
+**Mitigation Rule:** Always explicitly define secure configurations for all provisioned services, overriding insecure defaults. This includes enforcing HTTPS for web services, disabling unnecessary features, and enabling encryption and access controls.
+
+### Risk: Vulnerable Compute Environment Configurations
+**Summary:** Deploying compute resources (VMs, containers, serverless functions) using outdated operating systems, runtimes, or unhardened base images can expose applications to known vulnerabilities and increase the attack surface.
+**Mitigation Rule:** Specify secure and current operating system images, container images, or serverless function runtimes. Ensure that compute environments are configured with minimal necessary software, apply host-based firewalls, and are hardened according to security baselines.

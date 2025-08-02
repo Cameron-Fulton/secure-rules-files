@@ -1,0 +1,51 @@
+# Secure HCL Configuration Rules for LLM Generation
+
+## Foundational Instructions for Secure Infrastructure Generation
+
+As a security-aware infrastructure engineer, generate secure HCL configurations using Terraform that inherently prevent common cloud security misconfigurations across all major cloud providers (AWS, Azure, GCP, and others). Focus on implementing defense-in-depth principles, least privilege access, and secure-by-default configurations regardless of the target cloud platform.
+
+*   Use inline comments to clearly highlight critical security controls, compliance requirements, and any security assumptions made in the infrastructure code.
+*   Adhere strictly to cloud security best practices from frameworks like CIS Benchmarks, cloud provider security frameworks (AWS Well-Architected, Azure Security Benchmark, Google Cloud Security Command Center), and industry compliance standards.
+*   **Avoid Hardcoded Values**: Never hardcode sensitive values like passwords, API keys, cryptographic keys, or private SSH keys directly in Terraform configurations or variable files. Always use external secret management services appropriate for the target cloud platform (e.g., AWS Secrets Manager, Azure Key Vault, Google Secret Manager, HashiCorp Vault). Reference secrets dynamically at runtime.
+
+## Top Infrastructure Security Risks and Mitigation Rules (HCL + Terraform Specific)
+
+### Risk: Excessive Permissions / Least Privilege Violation
+**Summary:** Granting overly broad or unnecessary permissions to IAM roles, service accounts, or resources can lead to privilege escalation and unauthorized access if compromised.
+**Mitigation Rule:** Always define IAM policies and roles with the absolute minimum permissions required for a resource or identity to perform its intended function, following the principle of least privilege. Explicitly deny actions rather than implicitly allowing broad access, and avoid `*` actions where possible. Review and restrict `iam:PassRole` permissions.
+
+### Risk: Unencrypted Data at Rest
+**Summary:** Storing sensitive data without encryption at rest in storage services (e.g., object storage, databases, block storage) makes it vulnerable to unauthorized access upon breach.
+**Mitigation Rule:** Mandate server-side encryption by default for all data at rest in storage services (e.g., S3 buckets, Azure Storage Accounts, GCP Cloud Storage buckets, EBS volumes, Azure Disks, GCP Persistent Disks, managed databases). Prefer customer-managed keys (CMK) via KMS/Key Vault where compliance requires it, otherwise use service-managed keys.
+
+### Risk: Publicly Accessible Resources
+**Summary:** Exposing sensitive services or data to the public internet without proper authentication, authorization, or business justification creates a significant attack surface.
+**Mitigation Rule:** Restrict public network access to all infrastructure resources (e.g., storage buckets, databases, compute instances, load balancers, APIs) unless absolutely necessary and explicitly approved. If public access is required, implement strict ingress rules, WAFs, and robust authentication/authorization mechanisms. Block public access to S3 buckets and similar object storage by default.
+
+### Risk: Insecure Network Configuration and Segmentation
+**Summary:** Weak or misconfigured network security groups, firewalls, and network ACLs can lead to unauthorized network access, lateral movement, and data exfiltration.
+**Mitigation Rule:** Implement strict network segmentation using VPCs/VNets/private subnets, security groups, network ACLs, and firewall rules to control traffic flow. Define explicit ingress and egress rules that permit only necessary ports and IP ranges. Avoid allowing `0.0.0.0/0` on sensitive ports (e.g., SSH, RDP, database ports) or on production resources.
+
+### Risk: Missing or Inadequate Logging and Monitoring
+**Summary:** A lack of comprehensive audit trails and monitoring capabilities prevents effective detection of security incidents, unauthorized activities, and compliance violations.
+**Mitigation Rule:** Enable extensive logging for all cloud services, including API activity (e.g., CloudTrail, Azure Activity Log, Cloud Audit Logs), resource configuration changes, network flow logs, and application logs. Configure log retention policies, centralize logs to a secure location, and integrate with security information and event management (SIEM) solutions for real-time monitoring and alerting.
+
+### Risk: Hardcoded Sensitive Information
+**Summary:** Embedding sensitive credentials, API keys, or secrets directly in configuration files or code exposes them to source control compromise and unauthorized access.
+**Mitigation Rule:** Never hardcode any sensitive values. Always retrieve secrets from dedicated cloud-native secret management services (e.g., AWS Secrets Manager, Azure Key Vault, Google Secret Manager) or HashiCorp Vault during runtime. Ensure that secret management configurations follow least privilege and are themselves securely configured.
+
+### Risk: Unsecured Compute Configurations
+**Summary:** Deploying compute instances (VMs, containers, serverless functions) without hardened images, proper patch management, or host-level security controls increases vulnerability to exploits.
+**Mitigation Rule:** Utilize hardened operating system images or container images for compute resources, preferably from trusted sources or custom-built with security baselines. Provision compute with minimal required software. Apply security groups/firewall rules at the instance level. Do not provision instances with default administrative user accounts.
+
+### Risk: Vulnerable Database Configurations
+**Summary:** Misconfigured databases, such as those exposed publicly, lacking encryption, or using weak authentication, are prime targets for data breaches.
+**Mitigation Rule:** Configure databases securely: deploy them in private subnets, restrict access to specific applications or subnets, enable encryption for data at rest and in transit, and enforce strong authentication mechanisms (e.g., IAM authentication, strong passwords, multi-factor authentication where applicable). Disable unnecessary public endpoints.
+
+### Risk: Weak Key Management
+**Summary:** Inadequate management of cryptographic keys can compromise the security of encrypted data, leading to data exposure if keys are stolen or misused.
+**Mitigation Rule:** Mandate the use of cloud-native Key Management Services (KMS) like AWS KMS, Azure Key Vault, or Google Cloud KMS for generating, storing, and managing all cryptographic keys used for encryption, digital signatures, and authentication. Define explicit key usage policies and enforce least privilege for key access.
+
+### Risk: Lack of Resource Deletion Protection
+**Summary:** Accidental or malicious deletion of critical infrastructure resources can lead to significant downtime, data loss, and operational disruption.
+**Mitigation Rule:** Enable deletion protection, termination protection, or resource locks for critical production infrastructure components (e.g., databases, primary storage, production compute instances, network components) where supported by the cloud provider. Ensure Terraform configurations leverage these features to prevent unintended destruction.

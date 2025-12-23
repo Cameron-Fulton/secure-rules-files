@@ -1,0 +1,51 @@
+---
+description: Enforce secure infrastructure-as-code best practices for HCL/Terraform configurations to prevent common cloud security misconfigurations.
+globs: **/*.hcl, **/*.tf, **/*.tfvars
+alwaysApply: false
+---
+
+As a security-aware infrastructure engineer, generate secure HCL configurations using Terraform that inherently prevent common cloud security misconfigurations across all major cloud providers (AWS, Azure, GCP, and others).
+Focus on implementing defense-in-depth principles, least privilege access, and secure-by-default configurations regardless of the target cloud platform.
+Use inline comments to clearly highlight critical security controls, compliance requirements, and any security assumptions made in the infrastructure code.
+Adhere strictly to cloud security best practices from frameworks like CIS Benchmarks, cloud provider security frameworks (AWS Well-Architected, Azure Security Benchmark, Google Cloud Security Command Center), and industry compliance standards.
+**Avoid Hardcoded Values**: Never hardcode sensitive values like passwords or API keys. Use external secret management services appropriate for the target cloud platform such as AWS Secrets Manager, Azure Key Vault, or Google Secret Manager.
+
+### Risk: Excessive Permissions
+**Summary:** Granting overly broad permissions can lead to unauthorized access and privilege escalation across all cloud environments.
+**Mitigation Rule:** Implement the principle of least privilege for all IAM roles, users, and service accounts. Restrict permissions to the minimum necessary actions and resources required for a function. Explicitly deny dangerous actions where possible. For AWS, use fine-grained IAM policies. For Azure, use custom roles or built-in roles with careful assignment. For GCP, leverage custom roles and service account permissions.
+
+### Risk: Unencrypted Data at Rest/In Transit
+**Summary:** Storing or transmitting unencrypted sensitive data can result in data breaches and non-compliance across cloud platforms.
+**Mitigation Rule:** Ensure all data at rest in storage services (e.g., S3 buckets, Azure Storage accounts, GCP Cloud Storage) is encrypted using server-side encryption with customer-managed keys (CMKs) where possible, or platform-managed keys by default. Enforce encryption in transit for all network communication, using TLS 1.2+ for load balancers, APIs, and inter-service communication.
+
+### Risk: Publicly Exposed Resources
+**Summary:** Inadvertently exposing cloud resources (storage, databases, virtual machines) to the public internet creates significant attack vectors and data leakage risks.
+**Mitigation Rule:** Prevent public access to storage buckets, databases, compute instances, and other critical infrastructure unless explicitly required and secured. Configure network access controls (security groups, network security groups, firewall rules) to block inbound traffic from the internet by default. Ensure public IPs are not assigned to sensitive resources.
+
+### Risk: Network Exposure & Ingress/Egress Control
+**Summary:** Misconfigured network access controls can allow unauthorized inbound or outbound connections, leading to data exfiltration or unauthorized access.
+**Mitigation Rule:** Restrict network ingress to only necessary ports and trusted IP ranges. Limit egress to only required external services. Use network segmentation (VPCs, VNets, shared VPCs) and enforce strict network security group/firewall rules. Avoid "0.0.0.0/0" rules for inbound access on production resources.
+
+### Risk: Logging and Monitoring Gaps
+**Summary:** Inadequate logging and monitoring can prevent timely detection of security incidents, hindering incident response and forensic analysis.
+**Mitigation Rule:** Enable comprehensive logging for all critical cloud services (e.g., CloudTrail, Azure Activity Logs, GCP Cloud Audit Logs, VPC Flow Logs). Centralize logs in a secure, immutable storage location. Ensure audit trails are configured to capture all API calls, access attempts, and configuration changes for security monitoring and compliance.
+
+### Risk: Weak Secrets Management
+**Summary:** Storing secrets insecurely or hardcoding them in infrastructure code exposes sensitive credentials to compromise.
+**Mitigation Rule:** Do not hardcode any sensitive values (API keys, database credentials, encryption keys, tokens) directly in Terraform configurations or variable files. Instead, integrate with cloud-native secret management services like AWS Secrets Manager, Azure Key Vault, or Google Secret Manager to retrieve secrets at runtime. Encrypt secrets even when stored in environment variables.
+
+### Risk: Unpatched/Outdated Components
+**Summary:** Using outdated operating systems, container images, or application runtimes with known vulnerabilities can expose resources to exploitation.
+**Mitigation Rule:** Provision infrastructure with the latest stable and securely configured operating system images, container images, and runtime versions. Implement automated patching or update mechanisms for compute instances and managed services where applicable. Ensure Terraform modules specify minimum acceptable versions for providers and modules.
+
+### Risk: Insecure Default Configurations
+**Summary:** Cloud services often come with insecure default settings that, if not explicitly overridden, can lead to security vulnerabilities.
+**Mitigation Rule:** Always explicitly define secure configurations, even if they align with current defaults, to ensure future changes in defaults do not introduce vulnerabilities. Override all default settings that compromise security (e.g., public access, unencrypted storage, unrestricted network rules) with secure-by-default options.
+
+### Risk: Missing or Weak Multi-Factor Authentication (MFA)
+**Summary:** Lack of MFA for privileged access to cloud accounts increases the risk of credential compromise and unauthorized access.
+**Mitigation Rule:** Enforce Multi-Factor Authentication (MFA) for all root accounts and administrative users/roles across all cloud providers. Mandate MFA for all privileged access paths to cloud consoles and APIs, including programmatic access.
+
+### Risk: Inadequate Resource Tagging/Inventory
+**Summary:** Poor resource tagging can lead to orphaned resources, misconfigurations, and hinder security auditing and cost management.
+**Mitigation Rule:** Implement mandatory and consistent tagging for all provisioned cloud resources. Tags should include information critical for security, such as environment (prod/dev), owner, application, and compliance requirements, to facilitate inventory, policy enforcement, and security assessments.

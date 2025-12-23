@@ -1,0 +1,50 @@
+---
+description: Enforces security best practices for YAML infrastructure configurations using Cloudformation.
+globs: "**/*.yaml, **/*.yml"
+alwaysApply: false
+---
+- As a security-aware infrastructure engineer, generate secure YAML configurations using Cloudformation that inherently prevent common cloud security misconfigurations across all major cloud providers (AWS, Azure, GCP, and others).
+- Focus on implementing defense-in-depth principles, least privilege access, and secure-by-default configurations regardless of the target cloud platform.
+- Use inline comments to clearly highlight critical security controls, compliance requirements, and any security assumptions made in the infrastructure code.
+- Adhere strictly to cloud security best practices from frameworks like CIS Benchmarks, cloud provider security frameworks (AWS Well-Architected, Azure Security Benchmark, Google Cloud Security Command Center), and industry compliance standards.
+- **Avoid Hardcoded Values**: Never hardcode sensitive values like passwords or API keys. Use external secret management services appropriate for the target cloud platform.
+
+### Risk: Excessive Permissions
+**Summary:** Overly broad permissions assigned to identities (roles, users, service accounts) lead to privilege escalation and unauthorized access across all cloud platforms.
+**Mitigation Rule:** When defining IAM roles, policies, and service accounts in CloudFormation, apply the principle of least privilege by specifying only the exact actions and resources required. Avoid using `*` for actions or resources unless absolutely necessary and documented. For AWS, use specific ARNs; for Azure, define custom roles with granular permissions; for GCP, use custom roles or predefined roles with explicit member bindings.
+
+### Risk: Public Access to Storage
+**Summary:** Unrestricted public access to data storage services can lead to data breaches and unauthorized data exfiltration across cloud providers.
+**Mitigation Rule:** Configure all CloudFormation storage resources (e.g., `AWS::S3::Bucket`, `Azure::Storage::StorageAccount`, `Google::Storage::Bucket`) to block public access by default. Ensure S3 bucket policies explicitly deny public reads/writes, Azure storage accounts disable public blob access, and GCP buckets enforce uniform bucket-level access and deny public read/write.
+
+### Risk: Unencrypted Data at Rest
+**Summary:** Storing sensitive data without encryption at rest exposes it to unauthorized disclosure if the underlying storage is compromised.
+**Mitigation Rule:** Ensure all CloudFormation-defined data storage services (databases, object storage, block storage) are configured with encryption at rest enabled. Prioritize using Customer Managed Keys (CMK) via KMS (AWS), Azure Key Vault (Azure), or Cloud Key Management Service (GCP) over cloud-managed keys for sensitive data.
+
+### Risk: Network Exposure
+**Summary:** Overly permissive network security group (firewall) rules allow unauthorized access to services and instances from the internet or internal networks.
+**Mitigation Rule:** Define CloudFormation network security group rules (e.g., `AWS::EC2::SecurityGroup`, `Azure::Network::NetworkSecurityGroup`, `Google::Compute::Firewall`) with the most restrictive ingress and egress rules. Specify minimal required ports, protocols, and CIDR ranges, strictly avoiding `0.0.0.0/0` unless for well-justified and secured public endpoints.
+
+### Risk: Missing Logging and Monitoring
+**Summary:** Lack of comprehensive logging and monitoring hinders detection of security incidents, unauthorized activities, and compliance auditing across cloud environments.
+**Mitigation Rule:** Enable and configure comprehensive logging through CloudFormation for all critical resources, including API activity logs (e.g., AWS CloudTrail, Azure Activity Log, GCP Cloud Audit Logs), network flow logs (e.g., VPC Flow Logs, NSG Flow Logs), and resource-specific logs. Ensure logs are delivered to centralized, immutable storage and integrated with monitoring services.
+
+### Risk: Hardcoded Credentials/Weak Secrets
+**Summary:** Relying on default credentials, weak passwords, or unrotated access keys significantly increases the risk of unauthorized access.
+**Mitigation Rule:** Never hardcode sensitive values (passphrases, API keys, database credentials) directly within CloudFormation templates. Instead, use secure, cloud-native secret management services (e.g., AWS Secrets Manager, Azure Key Vault, Google Secret Manager) to retrieve secrets at runtime, or use CloudFormation parameters for non-sensitive, configuration-level values.
+
+### Risk: Insecure Data Transmission
+**Summary:** Transmitting sensitive data over unencrypted channels exposes it to eavesdropping and tampering.
+**Mitigation Rule:** Enforce encryption in transit for all communications defined within CloudFormation, including load balancers, API gateways, and database connections. Mandate the use of HTTPS/TLS 1.2+ for all public-facing and internal endpoints where sensitive data is exchanged.
+
+### Risk: Lack of Deletion Protection
+**Summary:** Accidental or malicious deletion of critical infrastructure resources can lead to service outages and data loss.
+**Mitigation Rule:** For critical CloudFormation resources that hold state or are difficult to recreate (e.g., databases, S3 buckets, EC2 instances), enable deletion protection or termination protection properties where available. For AWS S3 buckets, set `DeletionPolicy: Retain` or `Snapshot` and enable `BlockPublicAccess`.
+
+### Risk: Unpatched/Vulnerable Compute Environments
+**Summary:** Deploying applications on outdated or unpatched operating systems and runtime environments introduces known vulnerabilities.
+**Mitigation Rule:** When deploying compute resources (e.g., `AWS::EC2::Instance`, `Azure::Compute::VirtualMachine`, `Google::Compute::Instance`) via CloudFormation, specify the latest available secure and patched base images (AMIs, VM Images). Prioritize using managed services (e.g., AWS Fargate, Azure Container Instances, Google Cloud Run) where the cloud provider manages the underlying OS patching.
+
+### Risk: Unsecured Public Endpoints
+**Summary:** Public-facing endpoints without proper authentication, authorization, or rate limiting can be vulnerable to abuse, DDoS attacks, or unauthorized data access.
+**Mitigation Rule:** Configure public-facing endpoints (e.g., API Gateways, Load Balancers) in CloudFormation to enforce strict authentication, authorization, and ideally, rate limiting. Utilize Web Application Firewalls (WAFs) for DDoS protection and common web exploits, and ensure TLS certificates are properly managed and renewed.

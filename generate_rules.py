@@ -11,6 +11,10 @@ def generate_secure_rules_prompt(language: str, assistant: str, framework: str=N
         assistant: The coding assistant to target, defaults to Cline
         framework: The core relevant framework, defaults to None
     """
+    
+    # Define infrastructure languages that need different security focus
+    infrastructure_languages = ['hcl', 'yaml']
+    is_infrastructure = language.lower() in infrastructure_languages
 
     ruleformat = 'The rules file must be formatted as a well-formed Markdown file.'
 
@@ -37,6 +41,41 @@ globs: **/*.js, **/*.ts # File patterns this rule applies to
 ```\n'''
 
 
+    if is_infrastructure:
+        return '''You are an expert DevSecOps engineer specializing in secure infrastructure-as-code generation using LLMs. Your task is to generate a comprehensive {0} rules file, specifically designed to enforce security best practices for {1} infrastructure configurations using {2}.
+
+{3}
+Adhere to best practices for effective rules files: they should be specific, actionable, concise, and maintain a consistent format.
+
+## Begin the rules file with the following foundational instructions for the LLM:
+- As a security-aware infrastructure engineer, generate secure {1} configurations using {2} that inherently prevent common cloud security misconfigurations across all major cloud providers (AWS, Azure, GCP, and others).
+- Focus on implementing defense-in-depth principles, least privilege access, and secure-by-default configurations regardless of the target cloud platform.
+- Use inline comments to clearly highlight critical security controls, compliance requirements, and any security assumptions made in the infrastructure code.
+- Adhere strictly to cloud security best practices from frameworks like CIS Benchmarks, cloud provider security frameworks (AWS Well-Architected, Azure Security Benchmark, Google Cloud Security Command Center), and industry compliance standards.
+- **Avoid Hardcoded Values**: Never hardcode sensitive values like passwords or API keys. Use external secret management services appropriate for the target cloud platform.
+
+## Identify and Address Top Infrastructure Security Risks for {1} + {2}:
+Based on common cloud security misconfigurations impacting {1} and {2} infrastructure across cloud providers, identify the top 7-10 relevant security risks. For each identified risk, include the following in the rules file:
+
+1. Risk Category: Clearly state the security risk category (e.g., "Excessive Permissions", "Unencrypted Storage", "Public Access", "Network Exposure").
+2. Summary: Provide a concise, one-sentence summary of the security risk and its potential impact across cloud platforms.
+3. Mitigation Rule ({1}/{2} Specific): Formulate a concrete, actionable rule for the LLM to follow, directly addressing the risk within the context of {1} and {2}. When possible, reference cloud-agnostic best practices and include guidance for major cloud providers (AWS, Azure, GCP).
+
+Example format:
+
+    ### Risk: Risk Category Name
+    **Summary:** Risk description and potential impact across cloud platforms
+    **Mitigation Rule:** Prescriptive, {2}-specific guidance for secure configuration that considers multi-cloud scenarios
+
+## Formatting and Content Constraints:
+
+* **No Examples**: Do not include any code examples within the rules file. The rules should be purely prescriptive guidance.
+* **Concise and Actionable**: Each rule should be brief and directly instruct the LLM on what to do or avoid.
+* **Structured**: The rules file should be logically structured, with clear headings or markers for each security risk.
+* **Return Only Rules File**: Your response should only be the generated {0} rules file, properly formatted, and nothing else. Do not include any introductory or concluding remarks outside the rules file content itself.
+'''.format(assistant,language,framework,ruleformat)
+
+    # Application security prompt for traditional programming languages
     return '''You are an expert software engineer specializing in secure code generation using LLMs. Your task is to generate a comprehensive {0} rules file, specifically designed to enforce security best practices for {1} applications built with {2}.
 
 {3}

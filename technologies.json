@@ -6,6 +6,8 @@
     ["JavaScript", "React"],
     ["JavaScript", "Node.js"],
     [".NET", "ASP.NET Core"],
-    ["C", "any"]
+    ["C", "any"],
+    ["HCL", "Terraform"],
+    ["YAML", "Cloudformation"]
   ]
 }

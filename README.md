@@ -13,7 +13,7 @@ This repository contains a broadly compatible set of baseline rules, encoding se
 
 ## What's Inside This Repository?
 
-- `generate_rules.py`: The Python script responsible for generating these rules files, leveraging the `gemini-2.5-flash-preview-05-20` model
+- `generate_rules.py`: The Python script responsible for generating these rules files, leveraging the `gemini-2.5-flash-preview-05-20` model (requires `GOOGLE_API_KEY` environment variable)
 - `prompt.md`: A transparent look at the core prompt used to guide Gemini in crafting these rules files
 - **Rules Directory**: The heart of the repository, organized intuitively by Programming Language/Framework to provide easy access to the relevant security rules.
 
